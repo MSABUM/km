@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>광명 준비</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        @media (max-width: 600px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            tr {
+                margin-bottom: 15px;
+            }
+            td {
+                border: none;
+                position: relative;
+                padding-left: 50%;
+            }
+            td:before {
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%;
+                padding-right: 10px;
+                white-space: nowrap;
+                content: attr(data-label);
+                font-weight: bold;
+            }
+        }
+        #totalSum {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <h1>광명 준비</h1>
+    <form id="itemForm">
+        <input type="text" id="itemName" placeholder="물품명" required>
+        <input type="number" id="itemPrice" placeholder="가격" required>
+        <input type="text" id="itemStore" placeholder="구매처">
+        <input type="text" id="itemContact" placeholder="연락처">
+        <input type="text" id="itemMemo" placeholder="메모">
+        <button type="submit">추가</button>
+    </form>
+    <table id="itemTable">
+        <thead>
+            <tr>
+                <th>물품명</th>
+                <th>가격</th>
+                <th>구매처</th>
+                <th>연락처</th>
+                <th>메모</th>
+                <th>관리</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <p>총 금액: <span id="totalSum">0</span>원</p>
+
+    <script>
+        let items = [];
+        const form = document.getElementById('itemForm');
+        const table = document.getElementById('itemTable').getElementsByTagName('tbody')[0];
+        const totalSum = document.getElementById('totalSum');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+            const store = document.getElementById('itemStore').value;
+            const contact = document.getElementById('itemContact').value;
+            const memo = document.getElementById('itemMemo').value;
+
+            addItem(name, price, store, contact, memo);
+            form.reset();
+        });
+
+        function addItem(name, price, store, contact, memo) {
+            const item = { name, price, store, contact, memo };
+            items.push(item);
+            renderTable();
+            saveToLocalStorage();
+        }
+
+        function deleteItem(index) {
+            items.splice(index, 1);
+            renderTable();
+            saveToLocalStorage();
+        }
+
+        function editItem(index) {
+            const item = items[index];
+            document.getElementById('itemName').value = item.name;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemStore').value = item.store;
+            document.getElementById('itemContact').value = item.contact;
+            document.getElementById('itemMemo').value = item.memo;
+            deleteItem(index);
+        }
+
+        function renderTable() {
+            table.innerHTML = '';
+            let sum = 0;
+            items.forEach((item, index) => {
+                const row = table.insertRow();
+                const cells = [
+                    {label: '물품명', value: item.name},
+                    {label: '가격', value: item.price},
+                    {label: '구매처', value: item.store},
+                    {label: '연락처', value: item.contact},
+                    {label: '메모', value: item.memo}
+                ];
+                cells.forEach(cell => {
+                    const td = row.insertCell();
+                    td.textContent = cell.value;
+                    td.setAttribute('data-label', cell.label);
+                });
+                const actionsCell = row.insertCell();
+                actionsCell.innerHTML = `
+                    <button onclick="editItem(${index})">수정</button>
+                    <button onclick="deleteItem(${index})">삭제</button>
+                `;
+                actionsCell.setAttribute('data-label', '관리');
+                sum += item.price;
+            });
+            totalSum.textContent = sum.toFixed(2);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('items', JSON.stringify(items));
+        }
+
+        window.addEventListener('load', () => {
+            const savedItems = localStorage.getItem('items');
+            if (savedItems) {
+                items = JSON.parse(savedItems);
+                renderTable();
+            }
+        });
+    </script>
+</body>
+</html>
