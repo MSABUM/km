@@ -86,7 +86,7 @@
     <h1>광명 준비</h1>
     <form id="itemForm">
         <input type="text" id="itemName" placeholder="물품명" required>
-        <input type="number" id="itemPrice" placeholder="가격" required>
+        <input type="number" id="itemPrice" placeholder="가격 (만원)" required>
         <input type="text" id="itemStore" placeholder="구매처">
         <input type="text" id="itemContact" placeholder="연락처">
         <input type="text" id="itemMemo" placeholder="메모">
@@ -96,7 +96,7 @@
         <thead>
             <tr>
                 <th>물품명</th>
-                <th>가격</th>
+                <th>가격 (만원)</th>
                 <th>구매처</th>
                 <th>연락처</th>
                 <th>메모</th>
@@ -105,7 +105,7 @@
         </thead>
         <tbody></tbody>
     </table>
-    <p>총 금액: <span id="totalSum">0</span>원</p>
+    <p>총 금액: <span id="totalSum">0</span>만원</p>
 
     <script>
         let items = [];
@@ -116,10 +116,15 @@
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             const name = document.getElementById('itemName').value;
-            const price = parseFloat(document.getElementById('itemPrice').value);
+            const price = parseInt(document.getElementById('itemPrice').value);
             const store = document.getElementById('itemStore').value;
             const contact = document.getElementById('itemContact').value;
             const memo = document.getElementById('itemMemo').value;
+
+            if (isNaN(price) || price < 0) {
+                alert('올바른 가격을 입력해주세요.');
+                return;
+            }
 
             addItem(name, price, store, contact, memo);
             form.reset();
@@ -155,7 +160,7 @@
                 const row = table.insertRow();
                 const cells = [
                     {label: '물품명', value: item.name},
-                    {label: '가격', value: item.price},
+                    {label: '가격 (만원)', value: item.price},
                     {label: '구매처', value: item.store},
                     {label: '연락처', value: item.contact},
                     {label: '메모', value: item.memo}
@@ -173,7 +178,7 @@
                 actionsCell.setAttribute('data-label', '관리');
                 sum += item.price;
             });
-            totalSum.textContent = sum.toFixed(2);
+            totalSum.textContent = sum;
         }
 
         function saveToLocalStorage() {
